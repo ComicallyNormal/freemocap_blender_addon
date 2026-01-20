@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Union, TYPE_CHECKING
 
 import numpy as np
-
+import traceback
 # this allows us to import the `FreemocapDataHandler` class for type hinting without causing a circular import
 if TYPE_CHECKING:
     from ..handler import FreemocapDataHandler
@@ -34,6 +34,7 @@ class FreemocapDataSaver:
         except Exception as e:
             print(f"Failed to save data to disk: {e}")
             print(e)
+            traceback.print_exc()
             raise e
 
     def _save_csv(self, save_path: Union[str, Path]):
@@ -48,9 +49,9 @@ class FreemocapDataSaver:
 
         components = {
             'body': self.handler.body_frame_name_xyz,
-            'right_hand': self.handler.right_hand_frame_name_xyz,
-            'left_hand': self.handler.left_hand_frame_name_xyz,
-            'face': self.handler.face_frame_name_xyz
+            # 'right_hand': self.handler.right_hand_frame_name_xyz,
+            # 'left_hand': self.handler.left_hand_frame_name_xyz,
+            # 'face': self.handler.face_frame_name_xyz
         }
 
         for name, other_component in self.handler.freemocap_data.other.items():
@@ -83,14 +84,14 @@ class FreemocapDataSaver:
         np.save(str(npy_path / "body_frame_name_xyz.npy"), self.handler.body_frame_name_xyz)
         print(f"Saved body_frame_name_xyz to {npy_path / 'body_frame_name_xyz.npy'}")
 
-        np.save(str(npy_path / "right_hand_frame_name_xyz.npy"), self.handler.right_hand_frame_name_xyz)
-        print(f"Saved right_hand_frame_name_xyz to {npy_path / 'right_hand_frame_name_xyz.npy'}")
+        # np.save(str(npy_path / "right_hand_frame_name_xyz.npy"), self.handler.right_hand_frame_name_xyz)
+        # print(f"Saved right_hand_frame_name_xyz to {npy_path / 'right_hand_frame_name_xyz.npy'}")
 
-        np.save(str(npy_path / "left_hand_frame_name_xyz.npy"), self.handler.left_hand_frame_name_xyz)
-        print(f"Saved left_hand_frame_name_xyz to {npy_path / 'left_hand_frame_name_xyz.npy'}")
+        # np.save(str(npy_path / "left_hand_frame_name_xyz.npy"), self.handler.left_hand_frame_name_xyz)
+        # print(f"Saved left_hand_frame_name_xyz to {npy_path / 'left_hand_frame_name_xyz.npy'}")
 
-        np.save(str(npy_path / "face_frame_name_xyz.npy"), self.handler.face_frame_name_xyz)
-        print(f"Saved face_frame_name_xyz to {npy_path / 'face_frame_name_xyz.npy'}")
+        # np.save(str(npy_path / "face_frame_name_xyz.npy"), self.handler.face_frame_name_xyz)
+        # print(f"Saved face_frame_name_xyz to {npy_path / 'face_frame_name_xyz.npy'}")
 
         for name, component in self.handler.freemocap_data.other.items():
             np.save(str(npy_path / f"{name}_frame_name_xyz.npy"), component.data)
@@ -157,9 +158,9 @@ class FreemocapDataSaver:
             trajectory_names_path = Path(path) / "trajectory_names.json"
             trajectory_names = {
                 "body": self.handler.body_names,
-                "right_hand": self.handler.right_hand_names,
-                "left_hand": self.handler.left_hand_names,
-                "face": self.handler.face_names,
+                # "right_hand": self.handler.right_hand_names,
+                # "left_hand": self.handler.left_hand_names,
+                # "face": self.handler.face_names,
                 "other": {key: value.trajectory_names for key, value in
                           self.handler.freemocap_data.other.items()}
             }
@@ -168,7 +169,9 @@ class FreemocapDataSaver:
         except Exception as e:
             print(f"Failed to save trajectory names: {e}")
             print(e)
+            traceback.print_exc()
             raise e
+
 
 
 DATA_README_TEXT = """

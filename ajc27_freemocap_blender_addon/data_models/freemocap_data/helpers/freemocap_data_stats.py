@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+# from ajc27_freemocap_blender_addon.data_models.freemocap_data.freemocap_data_model import FreemocapData
 
 import numpy as np
 
@@ -39,12 +40,21 @@ class FreemocapDataStats:
     face_stats: dict
 
     @classmethod
-    def from_freemocap_data(cls, freemocap_data):
+    def from_freemocap_data(cls, freemocap_data ):
+        calculated_right_hand_stats = None
+        calculated_left_hand_stats = None
+        calculated_face_stats = None
+        if freemocap_data.enable_hands:
+            print("hands are enabled from_freemocap_data")
+            calculated_right_hand_stats = calculate_stats(freemocap_data.hands['right'].data)
+            calculated_left_hand_stats = calculate_stats(freemocap_data.hands['left'].data)
+        if freemocap_data.enable_face:
+            calculated_face_stats = calculate_stats(freemocap_data.face.data)
         return cls(
             body_stats=calculate_stats(freemocap_data.body.data),
-            right_hand_stats=calculate_stats(freemocap_data.hands['right'].data),
-            left_hand_stats=calculate_stats(freemocap_data.hands['left'].data),
-            face_stats=calculate_stats(freemocap_data.face.data),
+            right_hand_stats=calculated_right_hand_stats,
+            left_hand_stats = calculated_left_hand_stats,
+            face_stats=calculated_face_stats,
         )
 
     def _format_dict(self, data):

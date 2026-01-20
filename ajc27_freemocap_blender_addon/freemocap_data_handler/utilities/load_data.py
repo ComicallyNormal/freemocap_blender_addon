@@ -2,7 +2,8 @@ from pathlib import Path
 
 from ajc27_freemocap_blender_addon.freemocap_data_handler.handler import FreemocapDataHandler
 from ajc27_freemocap_blender_addon.freemocap_data_handler.utilities.get_or_create_freemocap_data_handler import \
-    create_freemocap_data_handler
+    create_freemocap_data_handler,create_handler_from_data
+import traceback
 
 _BASE_FREEMOCAP_RECORDINGS_PATH = Path().home() / "freemocap_data" / "recording_sessions"
 _FREEMOCAP_TEST_DATA_PATH = _BASE_FREEMOCAP_RECORDINGS_PATH / "freemocap_test_data"
@@ -27,6 +28,20 @@ def load_freemocap_data(
         handler = create_freemocap_data_handler(recording_path=recording_path)
         print(f"Loaded freemocap_data from {recording_path} successfully: \n{handler}")
         handler.mark_processing_stage("original_from_file")
+    except Exception as e:
+        print(f"Failed to load freemocap freemocap_data: {e}")
+        print(e)
+        traceback.print_exc()
+        raise e
+
+    return handler
+
+def load_freemocap_data_handler_from_data(data,reprojection_error,center_of_mass)->FreemocapDataHandler:
+    print(f"Loading freemocap_data from passed data....")
+    try:
+        handler = create_handler_from_data(data,reprojection_error,center_of_mass)
+        # print(f"Loaded freemocap_data from data successfully: \n")
+        handler.mark_processing_stage("original_from_file") #FIXME: not really file
     except Exception as e:
         print(f"Failed to load freemocap freemocap_data: {e}")
         print(e)

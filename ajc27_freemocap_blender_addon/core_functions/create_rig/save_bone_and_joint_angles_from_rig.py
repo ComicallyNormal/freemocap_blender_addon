@@ -4,6 +4,8 @@ from typing import Dict, List
 
 import bpy
 
+import json
+
 from ajc27_freemocap_blender_addon.data_models.bones.bone_constraints import get_bone_constraint_definitions
 
 
@@ -46,6 +48,26 @@ def save_bone_and_joint_angles_from_rig(rig: bpy.types.Object,
     # Save documentation
     with open(documentation_save_path, 'w') as file:
         file.write(DOCUMENTATION_STRING)
+
+
+def stringified_bone_and_joint_angles_from_rig(rig: bpy.types.Object,
+                                        bone_names: List[str])->str:
+    frame_data = {}
+    for bone in rig.pose.bones:
+        if bone.name not in bone_names:
+            continue
+        frame_data[bone.name] = get_bone_data(bone)
+    
+    #csv
+    column_names = []
+
+    for bone_key in frame_data.keys():
+        for data_name in list(next(iter(frame_data.values())).keys()):
+            column_names.append(f"{bone_key}_{data_name}")
+            
+
+    payload = json.dumps(frame_data, separators=(",", ":"))
+    return payload
 
 
 def get_bone_data(bone: bpy.types.PoseBone) -> Dict[str, float]:

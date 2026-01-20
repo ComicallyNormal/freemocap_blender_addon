@@ -22,7 +22,8 @@ def enforce_rigid_bodies(handler: FreemocapDataHandler) -> FreemocapDataHandler:
                                              bone_definitions=get_bone_definitions())
 
     # Print the current bones length median, standard deviation and coefficient of variation
-    log_bone_statistics(bones=bones, type='original')
+    
+    # log_bone_statistics(bones=bones, type='original')
 
     # Iterate through the lengths array of each bone and check if the length is outside the interval defined by x*stdev with x as a factor
     # If the bone length is outside the interval, adjust the coordinates of the tail empty and its children so the new bone length is at the border of the interval
@@ -59,22 +60,27 @@ def enforce_rigid_bodies(handler: FreemocapDataHandler) -> FreemocapDataHandler:
                                                                          frame_number=frame_number,
                                                                          updated_trajectories=updated_trajectories,
                                                                          hierarchy=mediapipe_heirarchy)
-
-    print('Bone lengths enforced successfully!')
+    t_keys = updated_trajectories.keys()
+    # print("updated trajectory keys: ",)
+    # for key in t_keys:
+    #     print(key,updated_trajectories[key].shape)
+    # print(f"nose data: ",updated_trajectories["nose"])
+    # print('Bone lengths enforced successfully!')
 
     # Update the information of the virtual bones
     updated_bones = calculate_bone_length_statistics(trajectories=updated_trajectories, bone_definitions=bones)
 
     # Print the current bones length median, standard deviation and coefficient of variation
-    log_bone_statistics(bones=updated_bones, type='updated')
+    # log_bone_statistics(bones=updated_bones, type='updated')
 
-    print('Updating freemocap data handler with the new trajectories...')
+    # print('Updating freemocap data handler with the new trajectories...')
     for name, trajectory in updated_trajectories.items():
         handler.set_trajectory(name=name, data=trajectory)
 
+    # print("Set trajectories")
     handler.mark_processing_stage(name='enforced_rigid_bones',
                                   metadata={"bone_data": updated_bones,
-                                            "body_dimensions": calculate_body_dimensions(bones_info=updated_bones),
+                                            "body_dimensions": calculate_body_dimensions(bones_info=updated_bones), #bone_data metadata comes from 
                                             "skeleton_hierarchy": get_mediapipe_hierarchy()},
                                   )
     return handler

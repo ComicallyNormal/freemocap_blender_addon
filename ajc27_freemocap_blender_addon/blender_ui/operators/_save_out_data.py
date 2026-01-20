@@ -21,7 +21,8 @@ class FREEMOCAP_save_data_to_disk(bpy.types.Operator):
         try:
             print(f"Executing `main_controller.load_data() with config:{config}")
             controller = MainController(recording_path=recording_path,
-                                        config=config)
+                                        config=config,
+                                        realtime=False)
             empties = empties_from_parent_object(context.scene.freemocap_properties.data_parent_empty)
             controller.freemocap_data_handler.extract_data_from_empties(empties=empties)
             controller.save_data_to_disk()

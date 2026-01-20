@@ -12,10 +12,10 @@ from ajc27_freemocap_blender_addon.data_models.bones.ik_pole_bones import ik_pol
 from ajc27_freemocap_blender_addon.data_models.data_references import ArmatureType, PoseType
 from ajc27_freemocap_blender_addon.data_models.poses.pose_element import PoseElement
 from ajc27_freemocap_blender_addon.system.constants import UE_METAHUMAN_SIMPLE_ARMATURE, FREEMOCAP_ARMATURE
-
+from ajc27_freemocap_blender_addon.data_models.bones.bone_definitions import BoneDefinition
 
 def add_rig_by_bone(
-    bone_data: Dict[str, Dict[str, float]],
+    bone_data: Dict[str, BoneDefinition],
     rig_name: str,
     armature_definition: Dict[str, ArmatureBoneInfo] = ArmatureType.FREEMOCAP,
     pose: Dict[str, PoseElement] = PoseType.FREEMOCAP_TPOSE,
@@ -30,27 +30,39 @@ def add_rig_by_bone(
         raise ValueError("Invalid armature name")
 
     # Get rig height as the sum of the major bones length in a standing position. Assume foot declination angle of 23º
+
+    # print("bone keys:")
+    # print(bone_data.keys())
+    # print("foot value: ")
+    # foot_val = bone_data["foot.R"]
+    # print(foot_val)
+    # print(str(type(foot_val)))
     avg_ankle_projection_length = (
-        m.sin(m.radians(23)) * bone_data["foot.R"]["median"]
-        + m.sin(m.radians(23)) * bone_data["foot.L"]["median"]
+        m.sin(m.radians(23)) * bone_data["foot.R"].median
+        + m.sin(m.radians(23)) * bone_data["foot.L"].median
     ) / 2
     avg_shin_length = (
-        bone_data["shin.R"]["median"] + bone_data["shin.L"]["median"]
+        bone_data["shin.R"].median + bone_data["shin.L"].median
     ) / 2
     avg_thigh_length = (
-        bone_data["thigh.R"]["median"] + bone_data["thigh.L"]["median"]
+        bone_data["thigh.R"].median + bone_data["thigh.L"].median
     ) / 2
 
     # (?JSM -  tbh, I'm kinda confused about these inner workings of armatures and rigs and whatnot.
     # Tried to re-name and re-order some steps here in a way that makes sense,
     # but let me know if I crossed any wires)
-
+    
     # Add the armature
+    pre_num = len(bpy.context.scene.objects)
+    print(f"Total objects: {pre_num}")
     bpy.ops.object.armature_add(
         enter_editmode=False,
         align="WORLD",
         location=(0, 0, 0),
     )
+    print(f"Total objects after: {len(bpy.context.scene.objects)}")
+    print(f"delta: ")
+    print(len(bpy.context.scene.objects) - pre_num)
 
     # Get reference to armature
     rig = bpy.data.objects["Armature"]
@@ -106,7 +118,7 @@ def add_rig_by_bone(
             )
         else:
             bone_vector = mathutils.Vector(
-                [0, 0, bone_data[inv_bone_name_map[bone]]["median"]]
+                [0, 0, bone_data[inv_bone_name_map[bone]].median]
             )
 
         # Get the rotation matrix

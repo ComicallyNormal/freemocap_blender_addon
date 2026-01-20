@@ -9,7 +9,7 @@ from ajc27_freemocap_blender_addon.data_models.bones.bone_definitions import Bon
 
 def calculate_bone_length_statistics(trajectories: Dict[str, np.ndarray],
                                      bone_definitions: Dict[str, BoneDefinition]):
-    print('Calculating bone length statistics...')
+    # print('Calculating bone length statistics...')
 
     # Reset the lengths list for every virtual bone
     for bone in bone_definitions:
@@ -31,7 +31,7 @@ def calculate_bone_length_statistics(trajectories: Dict[str, np.ndarray],
 
             bone_definition.lengths.append(math.dist(head_pos, tail_pos))
 
-    print(f'Bone lengths calculated successfully!\n bones: \n{list(bone_definitions.keys())}')
+    # print(f'Bone lengths calculated successfully!\n bones: \n{list(bone_definitions.keys())}')
     # Update the length median and stdev values for each bone
     for name, bone in bone_definitions.items():
         # print(f'Calculating median and stdev for bone: {name}...')
@@ -39,10 +39,13 @@ def calculate_bone_length_statistics(trajectories: Dict[str, np.ndarray],
         bone.median = statistics.median(
             [length for length in bone.lengths if not math.isnan(length)])
         # virtual_bone['median'] = statistics.median(virtual_bone['lengths'])
-        bone.stdev = statistics.stdev(
-            [length for length in bone.lengths if not math.isnan(length)])
+        if(len(bone.lengths) ==1):
+            bone.stdev = 0.0
+        else:
+            bone.stdev = statistics.stdev(
+                [length for length in bone.lengths if not math.isnan(length)])
         # virtual_bone['stdev'] = statistics.stdev(virtual_bone['lengths'])
 
-    print(f'Bone length statistics calculated successfully!')
+    # print(f'Bone length statistics calculated successfully!')
 
     return bone_definitions

@@ -30,10 +30,14 @@ def align_markers_to_armature(
 ) -> None:
     # Move the empty markers to make the T-Pose in frame 0
     for marker, info in markers_reference.items():
-        target_marker = [obj for obj in markers_list if marker in obj.name][0]
-        if info["at_head"]:
-            target_marker.location = bone_info[info["bone"]]['head_position']
-        else:
-            target_marker.location = bone_info[info["bone"]]['tail_position']
+        # print(markers_list)
+        print("current marker: ",marker)
+        valid_markers = [obj for obj in markers_list if marker in obj.name]
+        if len(valid_markers)>0:
+            target_marker = valid_markers[0]
+            if info["at_head"]:
+                target_marker.location = bone_info[info["bone"]]['head_position']
+            else:
+                target_marker.location = bone_info[info["bone"]]['tail_position']
 
     return 

@@ -1,4 +1,5 @@
 import bpy
+import traceback
 from ajc27_freemocap_blender_addon.freemocap_data_handler.handler import FreemocapDataHandler
 
 from .create_empty_from_trajectory import create_empties
@@ -23,36 +24,37 @@ def create_freemocap_empties(handler: FreemocapDataHandler,
                                          empty_type="SPHERE",
                                          parent_object=parent_object, )
 
-        empties["hands"] = {}
-        # right hand trajectories
-        empties["hands"]["right"] = create_empties(
-            trajectory_frame_marker_xyz=handler.right_hand_frame_name_xyz,
-            names_list=handler.right_hand_names,
-            empty_scale=hand_empty_scale,
-            empty_type="PLAIN_AXES",
-            parent_object=parent_object,
-        )
-        # left hand trajectories
-        empties["hands"]["left"] = create_empties(
-            trajectory_frame_marker_xyz=handler.left_hand_frame_name_xyz,
-            names_list=handler.left_hand_names,
-            empty_scale=hand_empty_scale,
-            empty_type="PLAIN_AXES",
-            parent_object=parent_object,
-        )
+        # empties["hands"] = {}
+        # # right hand trajectories
+        # empties["hands"]["right"] = create_empties(
+        #     trajectory_frame_marker_xyz=handler.right_hand_frame_name_xyz,
+        #     names_list=handler.right_hand_names,
+        #     empty_scale=hand_empty_scale,
+        #     empty_type="PLAIN_AXES",
+        #     parent_object=parent_object,
+        # )
+        # # left hand trajectories
+        # empties["hands"]["left"] = create_empties(
+        #     trajectory_frame_marker_xyz=handler.left_hand_frame_name_xyz,
+        #     names_list=handler.left_hand_names,
+        #     empty_scale=hand_empty_scale,
+        #     empty_type="PLAIN_AXES",
+        #     parent_object=parent_object,
+        # )
 
-        empties["other"] = {}
-        empties["other"]["center_of_mass"] = create_empties(
-            trajectory_frame_marker_xyz=handler.center_of_mass_trajectory,
-            names_list="center_of_mass",
-            empty_scale=body_empty_scale * 3,
-            empty_type="ARROWS",
-            parent_object=center_of_mass_data_parent
-        )
+        # empties["other"] = {}
+        # empties["other"]["center_of_mass"] = create_empties(
+        #     trajectory_frame_marker_xyz=handler.center_of_mass_trajectory,
+        #     names_list="center_of_mass",
+        #     empty_scale=body_empty_scale * 3,
+        #     empty_type="ARROWS",
+        #     parent_object=center_of_mass_data_parent
+        # )
         return empties
 
     except Exception as e:
         print(f"Failed to load freemocap trajectory data as keyframed empties: {e}")
         print(f"{e}")
+        traceback.print_exc()
 
         raise e

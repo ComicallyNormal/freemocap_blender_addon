@@ -21,15 +21,17 @@ def calculate_body_dimensions(bones_info: Dict[str, BoneDefinition]) -> Dict[str
     total_height_minus_half_head = mean_leg_length + torso_length
     total_height = total_height_minus_half_head * 1.064  # correct for half head height - according to Winter 1995 anthropmetry, ground to head_center is ~93.6% of total height
 
-    left_hand_length = bones_info["f_middle.03.L"].median + bones_info["f_middle.02.L"].median + \
-                       bones_info["f_middle.01.L"].median + bones_info["palm.02.L"].median
+    # left_hand_length = bones_info["f_middle.03.L"].median + bones_info["f_middle.02.L"].median + \
+    #                    bones_info["f_middle.01.L"].median + bones_info["palm.02.L"].median
+    left_hand_length = 0.0
     left_forearm_length = bones_info["forearm.L"].median
     left_upperarm_length = bones_info["upper_arm.L"].median
     left_shoulder_length = bones_info["shoulder.L"].median
     left_arm_length = left_hand_length + left_forearm_length + left_upperarm_length + left_shoulder_length
 
-    right_hand_length = bones_info["f_middle.03.R"].median + bones_info["f_middle.02.R"].median + \
-                        bones_info["f_middle.01.R"].median + bones_info["palm.02.R"].median
+    # right_hand_length = bones_info["f_middle.03.R"].median + bones_info["f_middle.02.R"].median + \
+    #                     bones_info["f_middle.01.R"].median + bones_info["palm.02.R"].median
+    right_hand_length = 0.0
     right_forearm_length = bones_info["forearm.R"].median
     right_upperarm_length = bones_info["upper_arm.R"].median
     right_shoulder_length = bones_info["shoulder.R"].median

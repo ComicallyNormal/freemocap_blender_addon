@@ -16,9 +16,9 @@ def put_rigid_body_meshes_on_empties(empties: Dict[str, bpy.types.Object],
     all_empties = {}
     for component in empties.values():
         all_empties.update(component)
-        if component == empties["hands"]:
-            for hand_component in component.values():
-                all_empties.update(hand_component)
+        # if component == empties["hands"]:
+        #     for hand_component in component.values():
+        #         all_empties.update(hand_component)
         if component == empties["other"]:
             for other_component in component.values():
                 all_empties.update(other_component)

@@ -8,7 +8,9 @@ from ajc27_freemocap_blender_addon.core_functions.meshes.rigid_body_meshes.attac
 from ajc27_freemocap_blender_addon.freemocap_data_handler.utilities.get_or_create_freemocap_data_handler import (
     get_or_create_freemocap_data_handler,
 )
-from ajc27_freemocap_blender_addon.freemocap_data_handler.utilities.load_data import load_freemocap_data
+from ajc27_freemocap_blender_addon.freemocap_data_handler.handler import FreemocapDataHandler
+
+from ajc27_freemocap_blender_addon.freemocap_data_handler.utilities.load_data import load_freemocap_data,load_freemocap_data_handler_from_data
 from .create_rig.add_rig_method_enum import AddRigMethods
 from .create_rig.create_rig import create_rig
 
@@ -22,7 +24,7 @@ from .empties.creation.create_freemocap_empties import create_freemocap_empties
 from .meshes.center_of_mass.center_of_mass_mesh import create_center_of_mass_mesh
 from .meshes.center_of_mass.center_of_mass_trails import create_center_of_mass_trails
 from .meshes.skelly_mesh.attach_skelly_mesh import attach_skelly_mesh_to_rig
-from .create_rig.save_bone_and_joint_angles_from_rig import save_bone_and_joint_angles_from_rig
+from .create_rig.save_bone_and_joint_angles_from_rig import save_bone_and_joint_angles_from_rig, stringified_bone_and_joint_angles_from_rig
 from .setup_scene.make_parent_empties import create_parent_empty
 from .setup_scene.set_start_end_frame import set_start_end_frame
 from ..data_models.bones.bone_constraints import get_bone_constraint_definitions
@@ -31,27 +33,33 @@ from ..data_models.parameter_models.parameter_models import Config
 from ..freemocap_data_handler.helpers.saver import FreemocapDataSaver
 from ..freemocap_data_handler.operations.enforce_rigid_bodies.enforce_rigid_bodies import enforce_rigid_bodies
 from ..freemocap_data_handler.operations.fix_hand_data import fix_hand_data
-from ..freemocap_data_handler.operations.put_skeleton_on_ground import put_skeleton_on_ground
+from ..freemocap_data_handler.operations.put_skeleton_on_ground import put_skeleton_on_ground,calculate_skeleton_ground_data,put_skeleton_on_ground_with_existing_data
 
 from ajc27_freemocap_blender_addon.core_functions.add_capture_cameras.add_capture_cameras import add_capture_cameras
+import traceback
+import json
 
+from ajc27_freemocap_blender_addon.core_functions.setup_scene.clear_scene import clear_scene
 
 class MainController:
     """
     This class is used to run the program as a main script.
     """
 
-    def __init__(self, recording_path: str, blend_file_path: str, config: Config):
+    def __init__(self, recording_path: str, blend_file_path: str, config: Config,realtime : bool):
         self.rig = None
         self.empties = None
         self._data_parent_empty = None
         self._empty_parent_object = None
         self._rigid_body_meshes_parent_object = None
         self._video_parent_object = None
+        self.realtime = realtime
+        self.last_good_trajectories = None
         try:
             import bpy
             self._blender_version = bpy.app.version
         except ImportError:
+            print("import error")
             self._blender_version = None
 
         self.config = config
@@ -64,9 +72,9 @@ class MainController:
         self.rig_name = f"{self.recording_name}_rig"
         self.bone_constraint_definitions = get_bone_constraint_definitions()
         self._create_parent_empties()
-        self.freemocap_data_handler = get_or_create_freemocap_data_handler(
-            recording_path=self.recording_path
-        )
+        # self.freemocap_data_handler : FreemocapDataHandler= get_or_create_freemocap_data_handler(
+        #     recording_path=self.recording_path #TODO: need to pass in data directly as FreemocapDataHandler object instead of recording path
+        # )
         self.empties = None
 
     @property
@@ -139,10 +147,29 @@ class MainController:
         except Exception as e:
             print(f"Failed to load freemocap data: {e}")
             raise e
+        
+        
+    def load_freemocap_handler_from_data(self,data,reprojection_error,center_of_mass):
+        #okay so we dont just need pose data, we  need the error reprojection at least, maybe also weird stuff like center of mass.
+        #look into whether reprojection error can be computed just once or needs to be per frame, would love to hack this. 
+
+        #data = list[Point3d]
+        try:
+            print("Loading freemocap data....")
+            self.freemocap_data_handler = load_freemocap_data_handler_from_data(data,reprojection_error,center_of_mass)
+            self.freemocap_data_handler.mark_processing_stage("original_from_file")
+            set_start_end_frame(
+                number_of_frames=self.freemocap_data_handler.number_of_frames
+            )
+        except Exception as e:
+            print(f"Failed to load freemocap data: {e}")
+            raise e
+
+
 
     def calculate_virtual_trajectories(self):
         try:
-            print("Calculating virtual trajectories....")
+            # print("Calculating virtual trajectories....")
             self.freemocap_data_handler.calculate_virtual_trajectories()
             self.freemocap_data_handler.mark_processing_stage(
                 "add_virtual_trajectories"
@@ -155,7 +182,7 @@ class MainController:
     def put_data_in_inertial_reference_frame(self):
         try:
             print("Putting freemocap data in inertial reference frame....")
-            put_skeleton_on_ground(handler=self.freemocap_data_handler)
+            put_skeleton_on_ground(handler=self.freemocap_data_handler,realtime=self.realtime)
         except Exception as e:
             print(
                 f"Failed when trying to put freemocap data in inertial reference frame: {e}"
@@ -173,6 +200,8 @@ class MainController:
         except Exception as e:
             print(f"Failed during `enforce rigid bones`, error: `{e}`")
             print(e)
+            traceback.print_exc()
+
             raise e
 
     def fix_hand_data(self):
@@ -184,6 +213,7 @@ class MainController:
         except Exception as e:
             print(f"Failed during `fix hand data`, error: `{e}`")
             print(e)
+            traceback.print_exc()
             raise e
 
     def calculate_joint_angles(self):
@@ -191,15 +221,15 @@ class MainController:
             print("Calculating joint angles...")
             # Get the combined marker names
             marker_names = (
-                list(self.freemocap_data_handler.body_names) +
-                list(self.freemocap_data_handler.right_hand_names) +
-                list(self.freemocap_data_handler.left_hand_names)
+                list(self.freemocap_data_handler.body_names) 
+                # list(self.freemocap_data_handler.right_hand_names) +
+                # list(self.freemocap_data_handler.left_hand_names)
             )
             marker_frame_xyz = np.concatenate(
                 [
                     self.freemocap_data_handler.body_frame_name_xyz,
-                    self.freemocap_data_handler.right_hand_frame_name_xyz,
-                    self.freemocap_data_handler.left_hand_frame_name_xyz,
+                    # self.freemocap_data_handler.right_hand_frame_name_xyz,
+                    # self.freemocap_data_handler.left_hand_frame_name_xyz,
                 ],
                 axis=1,
             )
@@ -213,6 +243,7 @@ class MainController:
         except Exception as e:
             print(f"Failed to calculate joint angles: {e}")
             print(e)
+            traceback.print_exc()
             raise e
 
     def save_data_to_disk(self):
@@ -224,6 +255,7 @@ class MainController:
         except Exception as e:
             print(f"Failed to save data to disk: {e}")
             print(e)
+            traceback.print_exc()
             raise e
 
     def create_empties(self):
@@ -241,7 +273,17 @@ class MainController:
 
     def add_rig(self):
         try:
+            # print("clearing scene before rig")
+            # clear_scene()
             print("Adding rig...")
+
+    # Create a NEW parent object AFTER clearing
+            parent_object = create_parent_empty(
+                name="FreeMoCap_Parent",
+                type='PLAIN_AXES',
+                display_scale=1.0
+            )
+
             self.rig = create_rig(
                 bone_data=self.freemocap_data_handler.metadata["bone_data"],
                 rig_name=self.rig_name,
@@ -255,6 +297,7 @@ class MainController:
         except Exception as e:
             print(f"Failed to add rig: {e}")
             print(e)
+            traceback.print_exc()
             raise e
 
     def save_bone_and_joint_data_from_rig(self):
@@ -275,6 +318,27 @@ class MainController:
             print(f"Failed to save joint angles: {e}")
             print(e)
             raise e
+
+
+    def get_bones_json(self)->str:
+        bone_json : str =""
+        if self.rig is None:
+            raise ValueError("Rig is None!")
+        try:
+            print("Saving joint angles...")
+            bone_json = str(
+                Path(self.blend_file_path).parent / "saved_data" / f"{self.recording_name}_bone_and_joint_data.csv")
+            bone_json = stringified_bone_and_joint_angles_from_rig(
+                rig=self.rig,
+                bone_names=self.freemocap_data_handler.metadata["bone_data"].keys()
+            )
+        except Exception as e:
+            print(f"Failed to save joint angles: {e}")
+            print(e)
+            raise e
+
+        return bone_json
+        
 
     def attach_rigid_body_mesh_to_rig(self):
         if self.rig is None:
@@ -402,6 +466,7 @@ class MainController:
             )
         except Exception as e:
             print(f"Failed to export 3D model: {e}")
+            traceback.print_exc()
             raise e
 
     def add_capture_cameras(self):
@@ -442,9 +507,10 @@ class MainController:
         end_time = time.perf_counter_ns()
         stage_times['enforce_rigid_bones'] = (end_time - start_time)/1e9
 
+        print("fix hand data  ---- Skipping")
         start_time = time.perf_counter_ns()
-        self.fix_hand_data()
-        end_time = time.perf_counter_ns()
+        # self.fix_hand_data()
+        # end_time = time.perf_counter_ns()
         stage_times['fix_hand_data'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
@@ -470,7 +536,7 @@ class MainController:
         stage_times['add_rig'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
-        self.save_bone_and_joint_data_from_rig()
+        self.save_bone_and_joint_data_from_rig() #Here is where we need to intercept
         end_time = time.perf_counter_ns()
         stage_times['save_bone_and_joint_data_from_rig'] = (end_time - start_time)/1e9
 
@@ -526,3 +592,103 @@ class MainController:
         for stage, time in stage_times.items():
             print(f"{stage}: {time:.3f} seconds")
         print(f"Total time: {sum(stage_times.values()):.3f} seconds")
+
+    
+
+    def get_ground_data_from_100_frames(self):
+        (center_reference_point, x_forward,y_leftward) = calculate_skeleton_ground_data(self.freemocap_data_handler)
+        
+        return center_reference_point,x_forward,y_leftward
+
+
+    #TODO: This should pass in pose data and get out json
+    def process_mediapipe_pose(self,pose_data: list,reprojection_error : list[np.ndarray],center_of_mass,center,x_forward,y_leftward)->str:
+        
+
+        import time
+        print("Running all stages...")
+        stage_times = {}
+
+
+        # self.get_ground_data_from_100_frames(handler_100)
+
+
+        # Pure python stuff
+        # TODO - move the non-blender stuff to a another module (prob `skellyforge`)
+        start_time = time.perf_counter_ns()
+        # handler_100 = load_freemocap_data_handler_from_data(pose_data,reprojection_error,center_of_mass)(pose_data,reprojection_error,center_of_mass) #pose data is List of Point3D
+
+        self.load_freemocap_handler_from_data(pose_data,reprojection_error,center_of_mass) #pose data is List of Point3D
+        end_time = time.perf_counter_ns()
+        stage_times['load_freemocap_data'] = (end_time - start_time)/1e9
+
+        start_time = time.perf_counter_ns()
+        self.calculate_virtual_trajectories()
+        end_time = time.perf_counter_ns()
+        stage_times['calculate_virtual_trajectories'] = (end_time - start_time)/1e9
+
+        start_time = time.perf_counter_ns()
+        if not self.freemocap_data_handler.freemocap_data.groundplane_calibration:
+            # self.put_data_in_inertial_reference_frame() # TODO: save up and then pass in last 100 frames.
+            put_skeleton_on_ground_with_existing_data(self.freemocap_data_handler,center_reference_point=center,x_forward_reference_point=x_forward,y_leftward_reference_point=y_leftward)
+        end_time = time.perf_counter_ns()
+        stage_times['put_data_in_inertial_reference_frame'] = (end_time - start_time)/1e9
+        print("SUCCESSFULLY PUT DATA IN INERTIAL PHASE")
+        start_time = time.perf_counter_ns()
+        self.enforce_rigid_bones() #can I skip this - No not if you want bone_data which is needed for add_rig, which is needed for print?
+        end_time = time.perf_counter_ns()
+        stage_times['enforce_rigid_bones'] = (end_time - start_time)/1e9
+
+        start_time = time.perf_counter_ns()
+        # self.fix_hand_data()
+        end_time = time.perf_counter_ns()
+        stage_times['fix_hand_data'] = (end_time - start_time)/1e9
+
+        # start_time = time.perf_counter_ns()
+        # self.calculate_joint_angles()
+        # end_time = time.perf_counter_ns()
+        # stage_times['calculate_joint_angles'] = (end_time - start_time)/1e9
+
+        # start_time = time.perf_counter_ns()
+        # self.save_data_to_disk()
+        # end_time = time.perf_counter_ns()
+        # stage_times['save_data_to_disk'] = (end_time - start_time)/1e9
+
+        # Blender stuff
+        start_time = time.perf_counter_ns()
+        self.create_empties()
+        end_time = time.perf_counter_ns()
+        stage_times['create_empties'] = (end_time - start_time)/1e9
+
+        start_time = time.perf_counter_ns()
+        self.add_rig()
+        end_time = time.perf_counter_ns()
+        stage_times['add_rig'] = (end_time - start_time)/1e9
+
+        start_time = time.perf_counter_ns()
+        # self.save_bone_and_joint_data_from_rig() #Here is where we need to intercept
+        bone_json = self.get_bones_json()
+
+        end_time = time.perf_counter_ns()
+        stage_times['save_bone_and_joint_data_from_rig'] = (end_time - start_time)/1e9
+        print("\nSummary of stage times:")
+        for stage, time in stage_times.items():
+            print(f"{stage}: {time:.3f} seconds")
+        print(f"Total time: {sum(stage_times.values()):.3f} seconds")
+        return bone_json
+
+
+
+    # def _save_bone_json(self, path: Union[str,Path],bone_json : str):
+    #     try:
+    #     # save trajectory names
+    #         trajectory_names_path = Path(path) / "bone_json.json"
+            
+
+    #         trajectory_names_path.write_text(bone_json)
+    #         print(f"Saved trajectory names to {trajectory_names_path}")
+    #     except Exception as e:
+    #         print(f"Failed to save trajectory names: {e}")
+    #         print(e)
+    #         traceback.print_exc()
+    #         raise e     

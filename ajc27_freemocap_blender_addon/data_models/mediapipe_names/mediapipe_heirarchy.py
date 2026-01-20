@@ -21,7 +21,8 @@ _MEDIAPIPE_HIERARCHY = {
                      'head_center']
     },
     'head_center': {
-        'children': ['nose',
+        'children': [
+            'nose',
                      'mouth_right',
                      'mouth_left',
                      'right_eye',
@@ -31,7 +32,8 @@ _MEDIAPIPE_HIERARCHY = {
                      'left_eye_inner',
                      'left_eye_outer',
                      'right_ear',
-                     'left_ear']
+                     'left_ear'
+                     ]
     },
     # LEGS
     # RIGHT LEG
@@ -66,24 +68,6 @@ _MEDIAPIPE_HIERARCHY = {
     'right_elbow': {
         'children': ['right_wrist']
     },
-    'right_wrist': {
-        'children': ['right_thumb',
-                     'right_index',
-                     'right_pinky',
-                     'right_hand_middle',
-                     'right_hand_wrist']
-    },
-    'right_hand_wrist': {
-        'children': ['right_hand_thumb_cmc',
-                     'right_hand_index_finger_mcp',
-                     'right_hand_middle_finger_mcp',
-
-                     'right_hand_ring_finger_mcp',
-                     'right_hand_pinky_mcp']
-    },
-    'right_hand_thumb_cmc': {
-        'children': ['right_hand_thumb_mcp']
-    },
     # LEFT ARM
     'left_shoulder': {
         'children': ['left_elbow']
@@ -92,121 +76,10 @@ _MEDIAPIPE_HIERARCHY = {
     'left_elbow': {
         'children': ['left_wrist']
     },
-    'left_wrist': {
-        'children': ['left_thumb',
-                     'left_index',
-                     'left_pinky',
-                     'left_hand_middle',
-                     'left_hand_wrist']
-    },
-
-    'left_hand_wrist': {
-        'children': ['left_hand_thumb_cmc',
-                     'left_hand_index_finger_mcp',
-                     'left_hand_middle_finger_mcp',
-                     'left_hand_ring_finger_mcp',
-                     'left_hand_pinky_mcp']
-    },
-
     # HANDS
     # RIGHT HAND
-    'right_hand_thumb_mcp': {
-        'children': ['right_hand_thumb_ip']
-    },
-    'right_hand_thumb_ip': {
-        'children': ['right_hand_thumb_tip']
-    },
-    'right_hand_index_finger_mcp': {
-        'children': ['right_hand_index_finger_pip']
-    },
-    'right_hand_index_finger_pip': {
-        'children': ['right_hand_index_finger_dip']
-    },
-    'right_hand_index_finger_dip': {
-        'children': ['right_hand_index_finger_tip']
-    },
-    'left_hand_thumb_cmc': {
-        'children': ['left_hand_thumb_mcp']
-    },
-    'right_hand_middle_finger_mcp': {
-        'children': ['right_hand_middle_finger_pip']
-    },
-    'right_hand_middle_finger_pip': {
-        'children': ['right_hand_middle_finger_dip']
-    },
-    'right_hand_middle_finger_dip': {
-        'children': ['right_hand_middle_finger_tip']
-    },
-    'right_hand_ring_finger_mcp': {
-        'children': ['right_hand_ring_finger_pip']
-    },
-    'right_hand_ring_finger_pip': {
-        'children': ['right_hand_ring_finger_dip']
-    },
-    'left_hand_thumb_mcp': {
-        'children': ['left_hand_thumb_ip']
-    },
-    'right_hand_ring_finger_dip': {
-        'children': ['right_hand_ring_finger_tip']
-    },
-    'left_hand_thumb_ip': {
-        'children': ['left_hand_thumb_tip']
-    },
-    'right_hand_pinky_mcp': {
-        'children': ['right_hand_pinky_pip']
-    },
-    'left_hand_index_finger_mcp': {
-        'children': ['left_hand_index_finger_pip']
-    },
-    'right_hand_pinky_pip': {
-        'children': ['right_hand_pinky_dip']
-    },
-    'right_hand_pinky_dip': {
-        'children': ['right_hand_pinky_tip']
-    },
+    
     # LEFT HAND
-    'left_hand_index_finger_pip': {
-        'children': ['left_hand_index_finger_dip']
-    },
-    'left_hand_index_finger_dip': {
-        'children': ['left_hand_index_finger_tip']
-    },
-
-    'left_hand_middle_finger_mcp': {
-        'children': ['left_hand_middle_finger_pip']
-    },
-
-    'left_hand_middle_finger_pip': {
-        'children': ['left_hand_middle_finger_dip']
-    },
-
-    'left_hand_middle_finger_dip': {
-        'children': ['left_hand_middle_finger_tip']
-    },
-
-    'left_hand_ring_finger_mcp': {
-        'children': ['left_hand_ring_finger_pip']
-    },
-
-    'left_hand_ring_finger_pip': {
-        'children': ['left_hand_ring_finger_dip']
-    },
-
-    'left_hand_ring_finger_dip': {
-        'children': ['left_hand_ring_finger_tip']
-    },
-
-    'left_hand_pinky_mcp': {
-        'children': ['left_hand_pinky_pip']
-    },
-
-    'left_hand_pinky_pip': {
-        'children': ['left_hand_pinky_dip']
-    },
-
-    'left_hand_pinky_dip': {
-        'children': ['left_hand_pinky_tip']
-    },
 }
 
 def get_mediapipe_hierarchy():

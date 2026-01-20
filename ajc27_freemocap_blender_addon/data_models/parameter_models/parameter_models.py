@@ -26,7 +26,7 @@ class ReduceShakiness:
 class AddRig:
     bone_length_method: str = "median_length"
     keep_symmetry: bool = False
-    add_fingers_constraints: bool = True
+    add_fingers_constraints: bool = False
     use_limit_rotation: bool = False
 
 

@@ -8,12 +8,15 @@ if TYPE_CHECKING:
     from ..handler import FreemocapDataHandler
 
 
+
+#okay so if a whole video only does this once... .can we only do it once somehow rather than trying per frame?
+#what if we saved up like 100 recent frames and then calculated.
 def put_skeleton_on_ground(handler: 'FreemocapDataHandler'):
-    ground_reference_trajectories_with_error = handler.get_trajectories(
+    ground_reference_trajectories_with_error = handler.get_trajectories( #mod this to be last 100 trajectories or pass in 100
         trajectory_names=["right_heel", "left_heel", "right_foot_index", "left_foot_index"],
         with_error=True)
 
-    good_frame = estimate_good_frame(trajectories_with_error=ground_reference_trajectories_with_error)
+    good_frame = estimate_good_frame(trajectories_with_error=ground_reference_trajectories_with_error) #cache gpod frame
 
     original_reference_trajectories = {trajectory_name: trajectory["trajectory"][good_frame, :]
                                        for trajectory_name, trajectory in
@@ -33,11 +36,12 @@ def put_skeleton_on_ground(handler: 'FreemocapDataHandler'):
         y_leftward_reference_points.append(trajectory[good_frame, :])
     y_leftward_reference_point = np.nanmean(y_leftward_reference_points, axis=0)
 
-    z_upward_reference_point = handler.get_trajectory("head_center")[good_frame, :]
+    # z_upward_reference_point = handler.get_trajectory("head_center")[good_frame, :]
 
     x_forward = center_reference_point - y_leftward_reference_point
     y_left = x_forward_reference_point - center_reference_point
-    z_up = z_upward_reference_point - center_reference_point
+    # z_up = z_upward_reference_point - center_reference_point
+    z_up=None
 
     # Make them orthogonal
     z_hat = np.cross(x_forward, y_left)
@@ -48,8 +52,10 @@ def put_skeleton_on_ground(handler: 'FreemocapDataHandler'):
     x_hat = x_hat / np.linalg.norm(x_hat)
     y_hat = y_hat / np.linalg.norm(y_hat)
     z_hat = z_hat / np.linalg.norm(z_hat)
+    # print("hats: ",x_hat," ",y_hat," ",z_hat)
 
     rotation_matrix = np.array([x_hat, y_hat, z_hat])
+
 
     assert np.allclose(np.linalg.norm(x_hat), 1), "x_hat is not normalized"
     assert np.allclose(np.linalg.norm(y_hat), 1), "y_hat is not normalized"
@@ -70,9 +76,100 @@ def put_skeleton_on_ground(handler: 'FreemocapDataHandler'):
     handler.rotate(rotation=rotation_matrix)
     handler.mark_processing_stage(name="rotated_to_inertial_reference_frame",
                                   metadata={"rotation_matrix": rotation_matrix.tolist()})
+    
 
     print(
         "Finished putting freemocap data in inertial reference frame.\n freemocap_data(after):\n{handler}")
+
+
+
+def calculate_skeleton_ground_data(handler: 'FreemocapDataHandler'):
+    ground_reference_trajectories_with_error = handler.get_trajectories( #mod this to be last 100 trajectories or pass in 100
+        trajectory_names=["right_heel", "left_heel", "right_foot_index", "left_foot_index"],
+        with_error=True)
+
+    good_frame = estimate_good_frame(trajectories_with_error=ground_reference_trajectories_with_error) #cache gpod frame
+
+    original_reference_trajectories = {trajectory_name: trajectory["trajectory"][good_frame, :]
+                                       for trajectory_name, trajectory in
+                                       ground_reference_trajectories_with_error.items()}
+
+    center_reference_point = np.nanmean(list(original_reference_trajectories.values()), axis=0)
+
+    x_forward_reference_points = []
+    for trajectory in handler.get_trajectories(
+            trajectory_names=["left_foot_index", "right_foot_index"]).values():
+        x_forward_reference_points.append(trajectory[good_frame, :])
+    x_forward_reference_point = np.nanmean(x_forward_reference_points, axis=0)
+
+    y_leftward_reference_points = []
+    for trajectory in handler.get_trajectories(
+            trajectory_names=["left_heel", "left_foot_index"]).values():
+        y_leftward_reference_points.append(trajectory[good_frame, :])
+    y_leftward_reference_point = np.nanmean(y_leftward_reference_points, axis=0)
+
+    # z_upward_reference_point = handler.get_trajectory("head_center")[good_frame, :]
+
+    return center_reference_point,x_forward_reference_point,y_leftward_reference_point
+
+
+
+
+
+#okay so if a whole video only does this once... .can we only do it once somehow rather than trying per frame?
+#what if we saved up like 100 recent frames and then calculated.
+#
+def put_skeleton_on_ground_with_existing_data(handler: 'FreemocapDataHandler',center_reference_point,x_forward_reference_point,y_leftward_reference_point):
+
+    #Need: 
+    #center_reference_point
+    # x_forward_reference_point
+    #y_leftward_reference_point
+    #z_upward_reference_point
+
+    x_forward = center_reference_point - y_leftward_reference_point
+    y_left = x_forward_reference_point - center_reference_point
+    # z_up = z_upward_reference_point - center_reference_point
+
+    # Make them orthogonal
+    z_hat = np.cross(x_forward, y_left)
+    y_hat = np.cross(x_forward, z_hat)
+    x_hat = np.cross(y_hat, z_hat)
+
+    # Normalize them
+    x_hat = x_hat / np.linalg.norm(x_hat)
+    y_hat = y_hat / np.linalg.norm(y_hat)
+    z_hat = z_hat / np.linalg.norm(z_hat)
+    # print("hats: ",x_hat," ",y_hat," ",z_hat)
+
+    rotation_matrix = np.array([x_hat, y_hat, z_hat])
+
+
+    assert np.allclose(np.linalg.norm(x_hat), 1), "x_hat is not normalized"
+    assert np.allclose(np.linalg.norm(y_hat), 1), "y_hat is not normalized"
+    assert np.allclose(np.linalg.norm(z_hat), 1), "z_hat is not normalized"
+    assert np.allclose(np.dot(z_hat, y_hat), 0), "z_hat is not orthogonal to y_hat"
+    assert np.allclose(np.dot(z_hat, x_hat), 0), "z_hat is not orthogonal to x_hat"
+    assert np.allclose(np.dot(y_hat, x_hat), 0), "y_hat is not orthogonal to x_hat"
+    assert np.allclose(np.cross(x_hat, y_hat), z_hat), "Vectors do not follow right-hand rule"
+    assert np.allclose(rotation_matrix @ x_hat, [1, 0, 0]), "x_hat is not rotated to [1, 0, 0]"
+    assert np.allclose(rotation_matrix @ y_hat, [0, 1, 0]), "y_hat is not rotated to [0, 1, 0]"
+    assert np.allclose(rotation_matrix @ z_hat, [0, 0, 1]), "z_hat is not rotated to [0, 0, 1]"
+    assert np.allclose(np.linalg.det(rotation_matrix), 1), "rotation matrix is not a rotation matrix"
+
+
+    handler.translate(translation=-center_reference_point)
+    handler.mark_processing_stage("translated_to_origin",
+                                  metadata={
+                                      "original_origin_reference": center_reference_point.tolist()})
+    handler.rotate(rotation=rotation_matrix)
+    handler.mark_processing_stage(name="rotated_to_inertial_reference_frame",
+                                  metadata={"rotation_matrix": rotation_matrix.tolist()})
+    
+
+    print(
+        "Finished putting freemocap data in inertial reference frame.\n freemocap_data(after):\n{handler}")
+
 
 
 def get_body_trajectories_closest_to_the_ground(handler: 'FreemocapDataHandler') -> Dict[str, np.ndarray]:

@@ -25,7 +25,7 @@ class FreemocapComponentData:
             self.data_dimensions = ["frame", "marker", "xyz"]
             if not self.data.shape[1] == len(self.trajectory_names):
                 raise ValueError(
-                    f"Data frame shape {self.data.shape} does not match trajectory names length {len(self.trajectory_names)}")
+                    f"Data frame shape {self.data.shape} has length {self.data.shape[1]} which does not match trajectory names length {len(self.trajectory_names)}")
 
         elif self.data.ndim == 2:
             if not len(self.trajectory_names) == 1:

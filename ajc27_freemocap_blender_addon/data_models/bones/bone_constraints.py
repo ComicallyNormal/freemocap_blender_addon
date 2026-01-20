@@ -473,204 +473,204 @@ _BONE_CONSTRAINT_DEFINITIONS: Dict[
     "heel.02.L": [
         DampedTrackConstraint(target="left_heel", track_axis=TrackAxis.TRACK_Y)
     ],
-    "thumb.carpal.R": [
-        DampedTrackConstraint(
-            target="right_hand_thumb_cmc", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "thumb.01.R": [
-        DampedTrackConstraint(
-            target="right_hand_thumb_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "thumb.02.R": [
-        DampedTrackConstraint(
-            target="right_hand_thumb_ip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "thumb.03.R": [
-        DampedTrackConstraint(
-            target="right_hand_thumb_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.01.R": [
-        DampedTrackConstraint(
-            target="right_hand_index_finger_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_index.01.R": [
-        DampedTrackConstraint(
-            target="right_hand_index_finger_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_index.02.R": [
-        DampedTrackConstraint(
-            target="right_hand_index_finger_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_index.03.R": [
-        DampedTrackConstraint(
-            target="right_hand_index_finger_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.02.R": [
-        DampedTrackConstraint(
-            target="right_hand_middle_finger_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_middle.01.R": [
-        DampedTrackConstraint(
-            target="right_hand_middle_finger_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_middle.02.R": [
-        DampedTrackConstraint(
-            target="right_hand_middle_finger_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_middle.03.R": [
-        DampedTrackConstraint(
-            target="right_hand_middle_finger_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.03.R": [
-        DampedTrackConstraint(
-            target="right_hand_ring_finger_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_ring.01.R": [
-        DampedTrackConstraint(
-            target="right_hand_ring_finger_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_ring.02.R": [
-        DampedTrackConstraint(
-            target="right_hand_ring_finger_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_ring.03.R": [
-        DampedTrackConstraint(
-            target="right_hand_ring_finger_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.04.R": [
-        DampedTrackConstraint(
-            target="right_hand_pinky_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_pinky.01.R": [
-        DampedTrackConstraint(
-            target="right_hand_pinky_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_pinky.02.R": [
-        DampedTrackConstraint(
-            target="right_hand_pinky_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_pinky.03.R": [
-        DampedTrackConstraint(
-            target="right_hand_pinky_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "thumb.carpal.L": [
-        DampedTrackConstraint(
-            target="left_hand_thumb_cmc", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "thumb.01.L": [
-        DampedTrackConstraint(
-            target="left_hand_thumb_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "thumb.02.L": [
-        DampedTrackConstraint(target="left_hand_thumb_ip", track_axis=TrackAxis.TRACK_Y)
-    ],
-    "thumb.03.L": [
-        DampedTrackConstraint(
-            target="left_hand_thumb_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.01.L": [
-        DampedTrackConstraint(
-            target="left_hand_index_finger_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_index.01.L": [
-        DampedTrackConstraint(
-            target="left_hand_index_finger_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_index.02.L": [
-        DampedTrackConstraint(
-            target="left_hand_index_finger_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_index.03.L": [
-        DampedTrackConstraint(
-            target="left_hand_index_finger_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.02.L": [
-        DampedTrackConstraint(
-            target="left_hand_middle_finger_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_middle.01.L": [
-        DampedTrackConstraint(
-            target="left_hand_middle_finger_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_middle.02.L": [
-        DampedTrackConstraint(
-            target="left_hand_middle_finger_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_middle.03.L": [
-        DampedTrackConstraint(
-            target="left_hand_middle_finger_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.03.L": [
-        DampedTrackConstraint(
-            target="left_hand_ring_finger_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_ring.01.L": [
-        DampedTrackConstraint(
-            target="left_hand_ring_finger_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_ring.02.L": [
-        DampedTrackConstraint(
-            target="left_hand_ring_finger_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_ring.03.L": [
-        DampedTrackConstraint(
-            target="left_hand_ring_finger_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "palm.04.L": [
-        DampedTrackConstraint(
-            target="left_hand_pinky_mcp", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_pinky.01.L": [
-        DampedTrackConstraint(
-            target="left_hand_pinky_pip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_pinky.02.L": [
-        DampedTrackConstraint(
-            target="left_hand_pinky_dip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
-    "f_pinky.03.L": [
-        DampedTrackConstraint(
-            target="left_hand_pinky_tip", track_axis=TrackAxis.TRACK_Y
-        )
-    ],
+    # "thumb.carpal.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_thumb_cmc", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "thumb.01.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_thumb_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "thumb.02.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_thumb_ip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "thumb.03.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_thumb_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.01.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_index_finger_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_index.01.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_index_finger_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_index.02.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_index_finger_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_index.03.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_index_finger_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.02.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_middle_finger_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_middle.01.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_middle_finger_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_middle.02.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_middle_finger_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_middle.03.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_middle_finger_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.03.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_ring_finger_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_ring.01.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_ring_finger_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_ring.02.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_ring_finger_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_ring.03.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_ring_finger_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.04.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_pinky_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_pinky.01.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_pinky_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_pinky.02.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_pinky_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_pinky.03.R": [
+    #     DampedTrackConstraint(
+    #         target="right_hand_pinky_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "thumb.carpal.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_thumb_cmc", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "thumb.01.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_thumb_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "thumb.02.L": [
+    #     DampedTrackConstraint(target="left_hand_thumb_ip", track_axis=TrackAxis.TRACK_Y)
+    # ],
+    # "thumb.03.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_thumb_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.01.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_index_finger_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_index.01.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_index_finger_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_index.02.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_index_finger_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_index.03.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_index_finger_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.02.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_middle_finger_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_middle.01.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_middle_finger_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_middle.02.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_middle_finger_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_middle.03.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_middle_finger_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.03.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_ring_finger_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_ring.01.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_ring_finger_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_ring.02.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_ring_finger_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_ring.03.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_ring_finger_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "palm.04.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_pinky_mcp", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_pinky.01.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_pinky_pip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_pinky.02.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_pinky_dip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
+    # "f_pinky.03.L": [
+    #     DampedTrackConstraint(
+    #         target="left_hand_pinky_tip", track_axis=TrackAxis.TRACK_Y
+    #     )
+    # ],
 }
 
 def get_bone_constraint_definitions():

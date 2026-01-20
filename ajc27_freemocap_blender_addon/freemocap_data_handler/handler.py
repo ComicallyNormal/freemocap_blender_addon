@@ -16,33 +16,110 @@ from ..freemocap_data_handler.helpers.transformer import FreemocapDataTransforme
 
 class FreemocapDataHandler:
     def __init__(self,
-                 freemocap_data: FreemocapData):
+                 freemocap_data: FreemocapData,enable_hands :bool=False,enable_face : bool = False):
 
         self.freemocap_data = freemocap_data
         self._intermediate_stages = None
         self._transformer = FreemocapDataTransformer(handler=self)
         self._saver = FreemocapDataSaver(handler=self)
         self.mark_processing_stage(name="original_from_file")
+        self.enable_left_hand = enable_hands
+        self.enable_right_hand = enable_hands
+        self.enable_face = enable_face
+        self.enable_body = True
 
     @classmethod
     def from_recording_path(cls,
                             recording_path: str,
                             ) -> "FreemocapDataHandler":
-        freemocap_data = FreemocapData.from_recording_path(recording_path=recording_path)
+        freemocap_data = FreemocapData.from_recording_path(recording_path=recording_path, hands_enabled= False,face_enabled=False) #TODO: messy initalization
         return cls(freemocap_data=freemocap_data)
+
+    @classmethod
+    def from_mediapipe_data(cls,data : list[list],reprojection_error : list[np.ndarray],center_of_mass :np.ndarray)->"FreemocapDataHandler":
+        # print("entered from_mediapipe_data with data length of ", len(data))
+        # if len(data)>0:
+        #     print("sub length was: ",len(data))
+
+        # print("size of projerror data: ", len(reprojection_error))
+        # if(len(reprojection_error)>0):
+        #     print("first item: ",reprojection_error[0])
+        
+        # for err_item in reprojection_error:
+        #     print("shape of item: ",err_item.shape)
+
+        # tmp_counter = 0
+        # for d in data:
+        #     if(len(d)<33):
+        #         print(f"Bad length! {len(d)} for element{tmp_counter}")
+        #         tmp_counter +=1
+
+        converted_data = np.empty((len(data), 33, 3))
+                                  
+        for i in range(0,len(data)):
+            for j in range(0,33):
+                pnt = data[i][j]
+                converted_data[i][j][0] = pnt.x 
+                converted_data[i][j][1] = pnt.y
+                converted_data[i][j][2] = pnt.z  
+                pass
+
+        
+        converted_reprojection_data = np.empty((len(reprojection_error),len(reprojection_error[0])))
+        for i in range(0,len(reprojection_error)):
+            converted_reprojection_data[i] = reprojection_error[i] #basically converting list to ndarray
+            pass
+
+
+        # #Is it a good idea to cut off columns here?
+        # converted_data = np.empty((1, 33, 3), dtype=np.float32) # one frame, 33 rows, 3 columns per row
+        # counter = 0
+        # for pnt in data:
+        #     converted_data[0][counter][0] = pnt.x #FIXME
+        #     converted_data[0][counter][1] = pnt.y
+        #     converted_data[0][counter][2] = pnt.z
+        #     counter +=1
+        scale: float = 1000
+        
+        center_of_mass_scaled = center_of_mass/scale #np.load(data_paths.center_of_mass_npy) / scale
+        # other_data={"center_of_mass": FreemocapComponentData(name="center_of_mass",
+        #                                         data=center_of_mass_scaled,
+        #                                         data_source="freemocap",
+        #                                         trajectory_names=["center_of_mass"])}
+
+
+        empty_array = np.empty(0) #1 frame, 0 points, 3 columns if there were
+        freemocap_data = FreemocapData.from_data(
+            body_frame_name_xyz=converted_data,
+            left_hand_frame_name_xyz=empty_array,
+            right_hand_frame_name_xyz=empty_array,
+            face_frame_name_xyz=empty_array,
+            error=converted_reprojection_data,
+            enable_hands=False,
+            enable_face=False,
+            other = None
+            )
+        
+        return cls(freemocap_data=freemocap_data,enable_hands=False,enable_face=False)
 
     @property
     def metadata(self) -> Optional[Dict[Any, Any]]:
+        print("metadata entered")
+        # print(self.freemocap_data.metadata)
         return self.freemocap_data.metadata
 
     @property
     def trajectories(self) -> Dict[str, np.ndarray]:
         trajectories = {}
         trajectories.update(self.body_trajectories)
-        trajectories.update(self.right_hand_trajectories)
-        trajectories.update(self.left_hand_trajectories)
-        trajectories.update(self.face_trajectories)
+        if self.enable_right_hand:
+            trajectories.update(self.right_hand_trajectories)
+        if self.enable_left_hand:
+            trajectories.update(self.left_hand_trajectories)
+        if self.enable_face:
+            trajectories.update(self.face_trajectories)
         trajectories.update(self.other_trajectories)
+        # print("trajectories keys: ",trajectories.keys())
         return trajectories
 
     @property
@@ -80,9 +157,10 @@ class FreemocapDataHandler:
     @property
     def all_frame_name_xyz(self):
         all_data = np.concatenate([self.body_frame_name_xyz,
-                                   self.right_hand_frame_name_xyz,
-                                   self.left_hand_frame_name_xyz,
-                                   self.face_frame_name_xyz], axis=1)
+                                #    self.right_hand_frame_name_xyz,
+                                #    self.left_hand_frame_name_xyz,
+                                #    self.face_frame_name_xyz
+                                   ], axis=1)
 
         for other_component in self.freemocap_data.other.values():
             if len(other_component.data.shape) == 2:
@@ -163,7 +241,8 @@ class FreemocapDataHandler:
     @property
     def number_of_frames(self) -> int:
         frame_counts = self._collect_frame_counts()
-        self._validate_frame_counts(frame_counts)
+        # print("WARNING - DISABLING FRAME COUNT VALIDATION FOR DEV PURPOSES")
+        # self._validate_frame_counts(frame_counts)
         return frame_counts['body']
 
     @property
@@ -196,9 +275,9 @@ class FreemocapDataHandler:
     @property
     def number_of_trajectories(self):
         return (self.number_of_body_trajectories +
-                self.number_of_right_hand_trajectories +
-                self.number_of_left_hand_trajectories +
-                self.number_of_face_trajectories +
+                # self.number_of_right_hand_trajectories +
+                # self.number_of_left_hand_trajectories +
+                # self.number_of_face_trajectories +
                 self.number_of_other_trajectories)
 
     def get_body_dimensions(self):
@@ -308,19 +387,21 @@ class FreemocapDataHandler:
             if name in self.body_names:
                 trajectories.append(self.body_frame_name_xyz[:, self.body_names.index(name), :])
                 if with_error:
+                    # print("with error!")
+                    # print(self.freemocap_data.body)
                     errors.append(self.freemocap_data.body.error[:, self.body_names.index(name)])
 
-            if name in self.right_hand_names:
+            if self.enable_right_hand and name in self.right_hand_names:
                 trajectories.append(self.right_hand_frame_name_xyz[:, self.right_hand_names.index(name), :])
                 if with_error:
                     errors.append(self.freemocap_data.hands["right"].error[:, self.right_hand_names.index(name)])
 
-            if name in self.left_hand_names:
+            if self.enable_left_hand and name in self.left_hand_names:
                 trajectories.append(self.left_hand_frame_name_xyz[:, self.left_hand_names.index(name), :])
                 if with_error:
                     errors.append(self.freemocap_data.hands["left"].error[:, self.left_hand_names.index(name)])
 
-            if name in self.face_names:
+            if self.enable_face and name in self.face_names:
                 trajectories.append(self.face_frame_name_xyz[:, self.face_names.index(name), :])
                 if with_error:
                     errors.append(self.freemocap_data.face.error[:, self.face_names.index(name)])
@@ -358,9 +439,14 @@ class FreemocapDataHandler:
                        name: str,
                        data: np.ndarray,
                        component_type: Optional[FREEMOCAP_DATA_COMPONENT_TYPES] = None):
-        data = np.squeeze(
-            data)  # get rid of any dimensions of size 1 (aka `singleton dimensions`, aka 'you called a square a flat cube')
-        if not len(data.shape) == 2:
+        #I DONT TRUST YOUR SQUEEZE
+        # I think the squeeze is for the center of mass trajectory to take it from 3 to 2.
+        # data = np.squeeze( 
+        #     data)  # get rid of any dimensions of size 1 (aka `singleton dimensions`, aka 'you called a square a flat cube')
+        # print(data)
+        # print(f"name: {name}")
+        if not len(data.shape) == 2: #TODO: Is the extra shape from error?
+            print(f"{name} had shape: {data.shape}")
             raise ValueError(
                 f"Data should have 2 dimensions. Got {data.shape} instead.")
 
@@ -376,14 +462,14 @@ class FreemocapDataHandler:
                 if name in self.body_names:
                     self.freemocap_data.body.data[:, self.body_names.index(name), :] = data
 
-                if name in self.right_hand_names:
-                    self.freemocap_data.hands["right"].data[:, self.right_hand_names.index(name), :] = data
+                # if name in self.right_hand_names:
+                #     self.freemocap_data.hands["right"].data[:, self.right_hand_names.index(name), :] = data
 
-                if name in self.left_hand_names:
-                    self.freemocap_data.hands["left"].data[:, self.left_hand_names.index(name), :] = data
+                # if name in self.left_hand_names:
+                #     self.freemocap_data.hands["left"].data[:, self.left_hand_names.index(name), :] = data
 
-                if name in self.face_names:
-                    self.freemocap_data.face.data[:, self.face_names.index(name), :] = data
+                # if name in self.face_names:
+                #     self.freemocap_data.face.data[:, self.face_names.index(name), :] = data
 
                 for other_component in self.freemocap_data.other.values():
                     if name in other_component.trajectory_names:
@@ -400,11 +486,21 @@ class FreemocapDataHandler:
             raise Exception(f"Error while setting trajectory: {e}")
 
     def _collect_frame_counts(self) -> dict:
+
+        calculated_left_hand_frame_count = 0
+        calculated_right_hand_frame_count = 0
+        calculated_face_frame_count = 0
+        if self.enable_left_hand:
+            calculated_left_hand_frame_count = self.left_hand_frame_name_xyz.shape[0]
+        if self.enable_right_hand:
+            calculated_right_hand_frame_count = self.right_hand_frame_name_xyz.shape[0]
+        if self.enable_face:
+            calculated_face_frame_count = self.face_frame_name_xyz.shape[0]
         frame_counts = {
             'body': self.body_frame_name_xyz.shape[0],
-            'right_hand': self.right_hand_frame_name_xyz.shape[0],
-            'left_hand': self.left_hand_frame_name_xyz.shape[0],
-            'face': self.face_frame_name_xyz.shape[0],
+            'right_hand': calculated_right_hand_frame_count,
+            'left_hand': calculated_left_hand_frame_count,
+            'face': calculated_face_frame_count,
             'other': [other_component.data.shape[0] for other_component in self.freemocap_data.other.values()],
         }
         return frame_counts
@@ -420,6 +516,7 @@ class FreemocapDataHandler:
             body_frame_count == frame_count
             for frame_count in frame_counts['other']
         )
+
         if not (are_frame_counts_equal and are_other_frame_counts_equal):
             raise ValueError(f"Number of frames do not match: {frame_counts}")
 
@@ -430,7 +527,7 @@ class FreemocapDataHandler:
         """
         Mark the current state of the data as a processing stage (e.g. "raw", "reoriented", etc.)
         """
-        print(f"Marking processing stage {name}")
+        # print(f"Marking processing stage {name}")
         if self._intermediate_stages is None:
             self._intermediate_stages = {}
         if metadata is None:
@@ -518,7 +615,7 @@ class FreemocapDataHandler:
         self.mark_processing_stage(stage_name)
 
     def calculate_virtual_trajectories(self):
-        print(f"Calculating virtual trajectories")
+        # print(f"Calculating virtual trajectories")
         try:
             virtual_trajectories = calculate_virtual_trajectories(body_frame_name_xyz=self.body_frame_name_xyz,
                                                                   body_names=self.body_names)

@@ -42,26 +42,26 @@ class FreemocapDataTransformer:
                 f"Rotation matrix must be a 3x3 matrix. Got {rotation_matrix.shape} instead."
             )
 
-        print(f"Applying rotation matrix {rotation_matrix}")
+        # print(f"Applying rotation matrix {rotation_matrix}")
         if component_name == "body" or component_name is None:
             self.handler.body_frame_name_xyz = self._rotate_component(
                 self.handler.body_frame_name_xyz, rotation_matrix
             )
 
-        if component_name == "right_hand" or component_name is None:
-            self.handler.right_hand_frame_name_xyz = self._rotate_component(
-                self.handler.right_hand_frame_name_xyz, rotation_matrix
-            )
+        # if component_name == "right_hand" or component_name is None:
+        #     self.handler.right_hand_frame_name_xyz = self._rotate_component(
+        #         self.handler.right_hand_frame_name_xyz, rotation_matrix
+        #     )
 
-        if component_name == "left_hand" or component_name is None:
-            self.handler.left_hand_frame_name_xyz = self._rotate_component(
-                self.handler.left_hand_frame_name_xyz, rotation_matrix
-            )
+        # if component_name == "left_hand" or component_name is None:
+        #     self.handler.left_hand_frame_name_xyz = self._rotate_component(
+        #         self.handler.left_hand_frame_name_xyz, rotation_matrix
+        #     )
 
-        if component_name == "face" or component_name is None:
-            self.handler.face_frame_name_xyz = self._rotate_component(
-                self.handler.face_frame_name_xyz, rotation_matrix
-            )
+        # if component_name == "face" or component_name is None:
+        #     self.handler.face_frame_name_xyz = self._rotate_component(
+        #         self.handler.face_frame_name_xyz, rotation_matrix
+        #     )
 
         if component_name == "other" or component_name is None:
             for name, other_component in self.handler.freemocap_data.other.items():
@@ -141,26 +141,28 @@ class FreemocapDataTransformer:
                 translation=vector,
                 frame_number=frame_number,
             )
-        if component_name == "right_hand" or component_name is None:
-            self.handler.right_hand_frame_name_xyz = self._translate_component_data(
-                data=self.handler.right_hand_frame_name_xyz,
-                translation=vector,
-                frame_number=frame_number,
-            )
 
-        if component_name == "left_hand" or component_name is None:
-            self.handler.left_hand_frame_name_xyz = self._translate_component_data(
-                data=self.handler.left_hand_frame_name_xyz,
-                translation=vector,
-                frame_number=frame_number,
-            )
+            #TODO: Temporarily disabling, should also have the enable_hands flag
+        # if component_name == "right_hand" or component_name is None:
+        #     self.handler.right_hand_frame_name_xyz = self._translate_component_data(
+        #         data=self.handler.right_hand_frame_name_xyz,
+        #         translation=vector,
+        #         frame_number=frame_number,
+        #     )
 
-        if component_name == "face" or component_name is None:
-            self.handler.face_frame_name_xyz = self._translate_component_data(
-                data=self.handler.face_frame_name_xyz,
-                translation=vector,
-                frame_number=frame_number,
-            )
+        # if component_name == "left_hand" or component_name is None:
+        #     self.handler.left_hand_frame_name_xyz = self._translate_component_data(
+        #         data=self.handler.left_hand_frame_name_xyz,
+        #         translation=vector,
+        #         frame_number=frame_number,
+        #     )
+
+        # if component_name == "face" or component_name is None:
+        #     self.handler.face_frame_name_xyz = self._translate_component_data(
+        #         data=self.handler.face_frame_name_xyz,
+        #         translation=vector,
+        #         frame_number=frame_number,
+         #   )
         if component_name == "other" or component_name is None:
             for name, other_component in self.handler.freemocap_data.other.items():
                 self._translate_component_data(

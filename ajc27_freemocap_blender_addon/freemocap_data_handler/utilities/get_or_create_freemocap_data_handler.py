@@ -15,3 +15,8 @@ def create_freemocap_data_handler(recording_path: str):
     global _FREEMOCAP_DATA_HANDLER
     _FREEMOCAP_DATA_HANDLER = FreemocapDataHandler.from_recording_path(recording_path=recording_path)
     return _FREEMOCAP_DATA_HANDLER
+
+def create_handler_from_data(data,reprojection_error,center_of_mass):
+    global _FREEMOCAP_DATA_HANDLER
+    _FREEMOCAP_DATA_HANDLER = FreemocapDataHandler.from_mediapipe_data(data,reprojection_error,center_of_mass)
+    return _FREEMOCAP_DATA_HANDLER
