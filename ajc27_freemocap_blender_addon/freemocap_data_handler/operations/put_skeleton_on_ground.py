@@ -167,8 +167,8 @@ def put_skeleton_on_ground_with_existing_data(handler: 'FreemocapDataHandler',ce
                                   metadata={"rotation_matrix": rotation_matrix.tolist()})
     
 
-    print(
-        "Finished putting freemocap data in inertial reference frame.\n freemocap_data(after):\n{handler}")
+    # print(
+    #     "Finished putting freemocap data in inertial reference frame.\n freemocap_data(after):\n{handler}")
 
 
 

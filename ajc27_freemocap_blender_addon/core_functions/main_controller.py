@@ -1,6 +1,6 @@
 import traceback
 from pathlib import Path
-from typing import List
+from typing import List,Dict
 
 import numpy as np
 from ajc27_freemocap_blender_addon.core_functions.load_videos.load_videos import load_videos_as_planes
@@ -24,7 +24,7 @@ from .empties.creation.create_freemocap_empties import create_freemocap_empties
 from .meshes.center_of_mass.center_of_mass_mesh import create_center_of_mass_mesh
 from .meshes.center_of_mass.center_of_mass_trails import create_center_of_mass_trails
 from .meshes.skelly_mesh.attach_skelly_mesh import attach_skelly_mesh_to_rig
-from .create_rig.save_bone_and_joint_angles_from_rig import save_bone_and_joint_angles_from_rig, stringified_bone_and_joint_angles_from_rig
+from .create_rig.save_bone_and_joint_angles_from_rig import save_bone_and_joint_angles_from_rig, stringified_bone_and_joint_angles_from_rig,bone_and_joint_angles_from_rig
 from .setup_scene.make_parent_empties import create_parent_empty
 from .setup_scene.set_start_end_frame import set_start_end_frame
 from ..data_models.bones.bone_constraints import get_bone_constraint_definitions
@@ -40,6 +40,9 @@ import traceback
 import json
 
 from ajc27_freemocap_blender_addon.core_functions.setup_scene.clear_scene import clear_scene
+from ajc27_freemocap_blender_addon.core_functions.convert_to_gltf.skeleton_to_gltf import Transform, pose_to_gltf
+
+import time
 
 class MainController:
     """
@@ -55,6 +58,7 @@ class MainController:
         self._video_parent_object = None
         self.realtime = realtime
         self.last_good_trajectories = None
+        self.stage_times = {}
         try:
             import bpy
             self._blender_version = bpy.app.version
@@ -155,7 +159,7 @@ class MainController:
 
         #data = list[Point3d]
         try:
-            print("Loading freemocap data....")
+            # print("Loading freemocap data....")
             self.freemocap_data_handler = load_freemocap_data_handler_from_data(data,reprojection_error,center_of_mass)
             self.freemocap_data_handler.mark_processing_stage("original_from_file")
             set_start_end_frame(
@@ -325,19 +329,32 @@ class MainController:
         if self.rig is None:
             raise ValueError("Rig is None!")
         try:
-            print("Saving joint angles...")
-            bone_json = str(
-                Path(self.blend_file_path).parent / "saved_data" / f"{self.recording_name}_bone_and_joint_data.csv")
+            # print("Saving joint angles...")
             bone_json = stringified_bone_and_joint_angles_from_rig(
                 rig=self.rig,
                 bone_names=self.freemocap_data_handler.metadata["bone_data"].keys()
             )
         except Exception as e:
-            print(f"Failed to save joint angles: {e}")
-            print(e)
+            print(f"Failed to get joint angles as json: {e}")
             raise e
 
         return bone_json
+    
+    def get_bones(self):
+        bone_dict : Dict ={}
+        if self.rig is None:
+            raise ValueError("Rig is None!")
+        try:
+            # print("Saving joint angles...")
+            bone_dict = bone_and_joint_angles_from_rig(
+                rig=self.rig,
+                bone_names=self.freemocap_data_handler.metadata["bone_data"].keys()
+            )
+        except Exception as e:
+            print(f"Failed to get bones: {e}")
+            raise e
+
+        return bone_dict
         
 
     def attach_rigid_body_mesh_to_rig(self):
@@ -482,98 +499,98 @@ class MainController:
     def load_data(self):
         import time
         print("Running all stages...")
-        stage_times = {}
+        self.stage_times = {}
 
         # Pure python stuff
         # TODO - move the non-blender stuff to a another module (prob `skellyforge`)
         start_time = time.perf_counter_ns()
         self.load_freemocap_data()
         end_time = time.perf_counter_ns()
-        stage_times['load_freemocap_data'] = (end_time - start_time)/1e9
+        self.stage_times['load_freemocap_data'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.calculate_virtual_trajectories()
         end_time = time.perf_counter_ns()
-        stage_times['calculate_virtual_trajectories'] = (end_time - start_time)/1e9
+        self.stage_times['calculate_virtual_trajectories'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         if not self.freemocap_data_handler.freemocap_data.groundplane_calibration:
             self.put_data_in_inertial_reference_frame()
         end_time = time.perf_counter_ns()
-        stage_times['put_data_in_inertial_reference_frame'] = (end_time - start_time)/1e9
+        self.stage_times['put_data_in_inertial_reference_frame'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.enforce_rigid_bones()
         end_time = time.perf_counter_ns()
-        stage_times['enforce_rigid_bones'] = (end_time - start_time)/1e9
+        self.stage_times['enforce_rigid_bones'] = (end_time - start_time)/1e9
 
         print("fix hand data  ---- Skipping")
         start_time = time.perf_counter_ns()
         # self.fix_hand_data()
         # end_time = time.perf_counter_ns()
-        stage_times['fix_hand_data'] = (end_time - start_time)/1e9
+        self.stage_times['fix_hand_data'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.calculate_joint_angles()
         end_time = time.perf_counter_ns()
-        stage_times['calculate_joint_angles'] = (end_time - start_time)/1e9
+        self.stage_times['calculate_joint_angles'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.save_data_to_disk()
         end_time = time.perf_counter_ns()
-        stage_times['save_data_to_disk'] = (end_time - start_time)/1e9
+        self.stage_times['save_data_to_disk'] = (end_time - start_time)/1e9
 
         # Blender stuff
         import bpy
         start_time = time.perf_counter_ns()
         self.create_empties()
         end_time = time.perf_counter_ns()
-        stage_times['create_empties'] = (end_time - start_time)/1e9
+        self.stage_times['create_empties'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.add_rig()
         end_time = time.perf_counter_ns()
-        stage_times['add_rig'] = (end_time - start_time)/1e9
+        self.stage_times['add_rig'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.save_bone_and_joint_data_from_rig() #Here is where we need to intercept
         end_time = time.perf_counter_ns()
-        stage_times['save_bone_and_joint_data_from_rig'] = (end_time - start_time)/1e9
+        self.stage_times['save_bone_and_joint_data_from_rig'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.attach_rigid_body_mesh_to_rig()
         end_time = time.perf_counter_ns()
-        stage_times['attach_rigid_body_mesh_to_rig'] = (end_time - start_time)/1e9
+        self.stage_times['attach_rigid_body_mesh_to_rig'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.attach_skelly_mesh_to_rig()
         end_time = time.perf_counter_ns()
-        stage_times['attach_skelly_mesh_to_rig'] = (end_time - start_time)/1e9
+        self.stage_times['attach_skelly_mesh_to_rig'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.create_center_of_mass_mesh()
         end_time = time.perf_counter_ns()
-        stage_times['create_center_of_mass_mesh'] = (end_time - start_time)/1e9
+        self.stage_times['create_center_of_mass_mesh'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.add_videos()
         end_time = time.perf_counter_ns()
-        stage_times['add_videos'] = (end_time - start_time)/1e9
+        self.stage_times['add_videos'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.add_capture_cameras()
         end_time = time.perf_counter_ns()
-        stage_times['add_capture_cameras'] = (end_time - start_time)/1e9
+        self.stage_times['add_capture_cameras'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.setup_scene()
         end_time = time.perf_counter_ns()
-        stage_times['setup_scene'] = (end_time - start_time)/1e9
+        self.stage_times['setup_scene'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.export_3d_model()
         end_time = time.perf_counter_ns()
-        stage_times['export_3d_model'] = (end_time - start_time)/1e9
+        self.stage_times['export_3d_model'] = (end_time - start_time)/1e9
 
         try:
             # Add the data parent empty to the collection of data parents
@@ -589,9 +606,9 @@ class MainController:
 
         # Print summary
         print("\nSummary of stage times:")
-        for stage, time in stage_times.items():
+        for stage, time in self.stage_times.items():
             print(f"{stage}: {time:.3f} seconds")
-        print(f"Total time: {sum(stage_times.values()):.3f} seconds")
+        print(f"Total time: {sum(self.stage_times.values()):.3f} seconds")
 
     
 
@@ -601,13 +618,11 @@ class MainController:
         return center_reference_point,x_forward,y_leftward
 
 
-    #TODO: This should pass in pose data and get out json
-    def process_mediapipe_pose(self,pose_data: list,reprojection_error : list[np.ndarray],center_of_mass,center,x_forward,y_leftward)->str:
+    #Runs all the preliminary output for pose logic
+    def process_mediapipe_pose(self,pose_data: list,reprojection_error : list[np.ndarray],center_of_mass,center,x_forward,y_leftward)->Dict:
         
-
-        import time
         print("Running all stages...")
-        stage_times = {}
+        self.stage_times = {}
 
 
         # self.get_ground_data_from_100_frames(handler_100)
@@ -620,29 +635,29 @@ class MainController:
 
         self.load_freemocap_handler_from_data(pose_data,reprojection_error,center_of_mass) #pose data is List of Point3D
         end_time = time.perf_counter_ns()
-        stage_times['load_freemocap_data'] = (end_time - start_time)/1e9
+        self.stage_times['load_freemocap_data'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.calculate_virtual_trajectories()
         end_time = time.perf_counter_ns()
-        stage_times['calculate_virtual_trajectories'] = (end_time - start_time)/1e9
+        self.stage_times['calculate_virtual_trajectories'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         if not self.freemocap_data_handler.freemocap_data.groundplane_calibration:
             # self.put_data_in_inertial_reference_frame() # TODO: save up and then pass in last 100 frames.
             put_skeleton_on_ground_with_existing_data(self.freemocap_data_handler,center_reference_point=center,x_forward_reference_point=x_forward,y_leftward_reference_point=y_leftward)
         end_time = time.perf_counter_ns()
-        stage_times['put_data_in_inertial_reference_frame'] = (end_time - start_time)/1e9
+        self.stage_times['put_data_in_inertial_reference_frame'] = (end_time - start_time)/1e9
         print("SUCCESSFULLY PUT DATA IN INERTIAL PHASE")
         start_time = time.perf_counter_ns()
         self.enforce_rigid_bones() #can I skip this - No not if you want bone_data which is needed for add_rig, which is needed for print?
         end_time = time.perf_counter_ns()
-        stage_times['enforce_rigid_bones'] = (end_time - start_time)/1e9
+        self.stage_times['enforce_rigid_bones'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         # self.fix_hand_data()
         end_time = time.perf_counter_ns()
-        stage_times['fix_hand_data'] = (end_time - start_time)/1e9
+        self.stage_times['fix_hand_data'] = (end_time - start_time)/1e9
 
         # start_time = time.perf_counter_ns()
         # self.calculate_joint_angles()
@@ -658,26 +673,68 @@ class MainController:
         start_time = time.perf_counter_ns()
         self.create_empties()
         end_time = time.perf_counter_ns()
-        stage_times['create_empties'] = (end_time - start_time)/1e9
+        self.stage_times['create_empties'] = (end_time - start_time)/1e9
 
         start_time = time.perf_counter_ns()
         self.add_rig()
         end_time = time.perf_counter_ns()
-        stage_times['add_rig'] = (end_time - start_time)/1e9
-
+        self.stage_times['add_rig'] = (end_time - start_time)/1e9
+        
+        # print("\nSummary of stage times:")
+        # for stage, time in stage_times.items():
+        #     print(f"{stage}: {time:.3f} seconds")
+        # print(f"Total time: {sum(stage_times.values()):.3f} seconds")
+        
         start_time = time.perf_counter_ns()
         # self.save_bone_and_joint_data_from_rig() #Here is where we need to intercept
+        
+        bone_data = self.get_bones()
+
+        end_time = time.perf_counter_ns()
+        self.stage_times['get_bones'] = (end_time - start_time)/1e9
+        return bone_data
+
+
+
+    #From mediapipe data, get a skeleton in gltf format with an animation attached with a single frame.
+    def process_mediapipe_pose_as_gltf(self,pose_data: list,reprojection_error : list[np.ndarray],center_of_mass,center,x_forward,y_leftward)->str:
+        start_time = time.perf_counter_ns()
+
+        bone_data = self.process_mediapipe_pose(pose_data,reprojection_error,center_of_mass,center,x_forward,y_leftward)
+        
+        bone_tranformations :Dict[str,Transform] = {}
+
+        for bone_name in bone_data.keys():
+            cur_bone_data :Dict = bone_data[bone_name]
+            px = cur_bone_data["head_center_world_x"]
+            py = cur_bone_data["head_center_world_y"]
+            pz = cur_bone_data["head_center_world_z"]
+            rx = cur_bone_data["rotation_quaternion_x"]
+            ry = cur_bone_data["rotation_quaternion_y"]
+            rz = cur_bone_data["rotation_quaternion_z"]
+            rw = cur_bone_data["rotation_quaternion_w"]
+
+            cur_bone_transformation = Transform(position=(px,py,pz),rotation=(rx,ry,rz,rw))
+            bone_tranformations[bone_name] = cur_bone_transformation
+
+
+        gltf = pose_to_gltf(bone_tranformations)
+        end_time = time.perf_counter_ns()
+        self.stage_times['get_gltf'] = (end_time - start_time)/1e9
+        return gltf
+
+
+
+    def process_mediapipe_pose_as_json(self,pose_data: list,reprojection_error : list[np.ndarray],center_of_mass,center,x_forward,y_leftward)->str:
+        self.process_mediapipe_pose(pose_data,reprojection_error,center_of_mass,center,x_forward,y_leftward)
+        start_time = time.perf_counter_ns()
+        # self.save_bone_and_joint_data_from_rig() #Here is where we need to intercept
+        
         bone_json = self.get_bones_json()
 
         end_time = time.perf_counter_ns()
-        stage_times['save_bone_and_joint_data_from_rig'] = (end_time - start_time)/1e9
-        print("\nSummary of stage times:")
-        for stage, time in stage_times.items():
-            print(f"{stage}: {time:.3f} seconds")
-        print(f"Total time: {sum(stage_times.values()):.3f} seconds")
+        self.stage_times['save_bone_and_joint_data_from_rig'] = (end_time - start_time)/1e9
         return bone_json
-
-
 
     # def _save_bone_json(self, path: Union[str,Path],bone_json : str):
     #     try:

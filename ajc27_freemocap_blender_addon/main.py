@@ -51,6 +51,7 @@ def alex_run_as_main_function():
     reprojection_error = [np.empty(0)]#need json error printout
    
    #once
+    data_100 = []
     controller.load_freemocap_handler_from_data(data_100,reprojection_error,center_of_mass) #Need pose data as ndarray, 
     (center,x_forward,y_left,z_up) = controller.get_ground_data_from_100_frames()
 

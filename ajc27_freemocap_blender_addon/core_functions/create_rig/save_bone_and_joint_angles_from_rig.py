@@ -52,22 +52,20 @@ def save_bone_and_joint_angles_from_rig(rig: bpy.types.Object,
 
 def stringified_bone_and_joint_angles_from_rig(rig: bpy.types.Object,
                                         bone_names: List[str])->str:
+    frame_data = bone_and_joint_angles_from_rig(rig,bone_names)
+    payload = json.dumps(frame_data, separators=(",", ":"))
+    return payload
+
+
+def bone_and_joint_angles_from_rig(rig: bpy.types.Object,
+                                        bone_names: List[str])->Dict:
     frame_data = {}
     for bone in rig.pose.bones:
         if bone.name not in bone_names:
             continue
         frame_data[bone.name] = get_bone_data(bone)
     
-    #csv
-    column_names = []
-
-    for bone_key in frame_data.keys():
-        for data_name in list(next(iter(frame_data.values())).keys()):
-            column_names.append(f"{bone_key}_{data_name}")
-            
-
-    payload = json.dumps(frame_data, separators=(",", ":"))
-    return payload
+    return frame_data
 
 
 def get_bone_data(bone: bpy.types.PoseBone) -> Dict[str, float]:

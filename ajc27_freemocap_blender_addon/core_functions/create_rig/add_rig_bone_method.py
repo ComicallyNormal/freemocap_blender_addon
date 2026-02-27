@@ -54,15 +54,15 @@ def add_rig_by_bone(
     
     # Add the armature
     pre_num = len(bpy.context.scene.objects)
-    print(f"Total objects: {pre_num}")
+    # print(f"Total objects: {pre_num}")
     bpy.ops.object.armature_add(
         enter_editmode=False,
         align="WORLD",
         location=(0, 0, 0),
     )
-    print(f"Total objects after: {len(bpy.context.scene.objects)}")
-    print(f"delta: ")
-    print(len(bpy.context.scene.objects) - pre_num)
+    # print(f"Total objects after: {len(bpy.context.scene.objects)}")
+    # print(f"delta: ")
+    # print(len(bpy.context.scene.objects) - pre_num)
 
     # Get reference to armature
     rig = bpy.data.objects["Armature"]

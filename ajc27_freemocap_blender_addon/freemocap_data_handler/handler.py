@@ -104,7 +104,7 @@ class FreemocapDataHandler:
 
     @property
     def metadata(self) -> Optional[Dict[Any, Any]]:
-        print("metadata entered")
+        # print("metadata entered")
         # print(self.freemocap_data.metadata)
         return self.freemocap_data.metadata
 
@@ -550,7 +550,7 @@ class FreemocapDataHandler:
         if self.freemocap_data.metadata is None:
             self.freemocap_data.metadata = {}
 
-        print(f"Adding metadata {metadata.keys()}")
+        # print(f"Adding metadata {metadata.keys()}")
         self.freemocap_data.metadata.update(metadata)
 
     def add_other_component(self, component: FreemocapComponentData):

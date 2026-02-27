@@ -37,7 +37,7 @@ def load_freemocap_data(
     return handler
 
 def load_freemocap_data_handler_from_data(data,reprojection_error,center_of_mass)->FreemocapDataHandler:
-    print(f"Loading freemocap_data from passed data....")
+    # print(f"Loading freemocap_data from passed data....")
     try:
         handler = create_handler_from_data(data,reprojection_error,center_of_mass)
         # print(f"Loaded freemocap_data from data successfully: \n")

@@ -83,7 +83,7 @@ def clear_scene_fixed():
             print("ERROR: Context was invalidated during cleanup!")
             return False
         
-        print(f"✅ Scene cleared. Objects remaining: {len(bpy.context.scene.objects)}")
+        # print(f"✅ Scene cleared. Objects remaining: {len(bpy.context.scene.objects)}")
         return True
         
     except Exception as e:

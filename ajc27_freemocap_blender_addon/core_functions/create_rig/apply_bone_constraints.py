@@ -42,7 +42,7 @@ def apply_bone_constraints(
     else:
         raise ValueError("Invalid pose name")
 
-    print("Adding bone constraints...")
+    # print("Adding bone constraints...")
     # TODO: getting key error in this function with Failed to add rig: 'bpy_prop_collection[key]: key "pelvis.R" not found'
     # Change to pose mode
     bpy.context.view_layer.objects.active = rig

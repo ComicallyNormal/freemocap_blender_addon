@@ -4,7 +4,7 @@ def create_parent_empty(name: str,
                         type: str,
                         display_scale: float,
                         parent_object: bpy.types.Object = None):
-    print("Creating freemocap parent empty...")
+    # print("Creating freemocap parent empty...")
     
     # Ensure we're in OBJECT mode before creating empty
     if bpy.context.object and bpy.context.object.mode != 'OBJECT':
@@ -16,7 +16,7 @@ def create_parent_empty(name: str,
     parent_empty.name = name
  
     if parent_object is not None:
-        print(f"Setting parent of {parent_empty.name} to {parent_object.name}")
+        # print(f"Setting parent of {parent_empty.name} to {parent_object.name}")
         parent_empty.parent = parent_object
     
     return parent_empty
